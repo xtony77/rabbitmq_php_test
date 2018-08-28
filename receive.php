@@ -36,11 +36,13 @@ function receiveQueue($queuesName)
         try {
             $channel->wait(null, false, 5);
         } catch (AMQPTimeoutException $e) {
-            $channel->close();
-            $connection->close();
-            return true;
+            break;
         }
     }
+
+    $channel->close();
+    $connection->close();
+    return true;
 }
 
 $queuesName = 'testQueue';
