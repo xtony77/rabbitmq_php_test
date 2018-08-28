@@ -5,10 +5,9 @@ use PhpAmqpLib\Connection\AMQPStreamConnection;
 use PhpAmqpLib\Message\AMQPMessage;
 use PhpAmqpLib\Exception\AMQPTimeoutException;
 
-function receiveQueue($queuesName) 
+function receiveQueue($connection, $queuesName) 
 {
-    $connection = new AMQPStreamConnection('localhost', 5672, 'guest', 'guest');
-    $channel    = $connection->channel();
+    $channel = $connection->channel();
 
     // 持久消息不会因为重开机不见true
     $durable = true;
@@ -41,13 +40,13 @@ function receiveQueue($queuesName)
     }
 
     $channel->close();
-    $connection->close();
-    return true;
+    receiveQueue($connection, $queuesName);
 }
 
+$connection = new AMQPStreamConnection('localhost', 5672, 'guest', 'guest');
 $queuesName = 'testQueue';
-
-$run = true;
-while ( $run == true ) {
-    $run = receiveQueue($queuesName);
+try {
+    receiveQueue($connection, $queuesName);
+} catch (Exception $e) {
+    $connection->close();
 }
